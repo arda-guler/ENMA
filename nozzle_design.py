@@ -7,16 +7,28 @@ import matplotlib.pyplot as plt
 import math
 import csv
 
+from plot import *
+from mach import *
+
 def get_parabola_point(Nx, Ny, Qx, Qy, Ex, Ey, t):
     x = ((1-t)**2) * Nx + 2*(1-t)*t*Qx + (t**2) * Ex
     y = ((1-t)**2) * Ny + 2*(1-t)*t*Qy + (t**2) * Ey
 
     return x, y
 
-def compute(D_throat, D_exit, length_percent=80, theta_n=None, theta_e=None):
+def compute_geometry(D_throat, D_exit, length_percent=80, theta_n=None, theta_e=None, x_fine=None, t_fine=None):
 
     xs = []
     ys = []
+
+    if not length_percent:
+        length_percent = 80
+
+    if not x_fine:
+        x_fine = 100
+
+    if not t_fine:
+        t_fine = 20
 
     if length_percent < 60:
         length_percent = 60
@@ -90,7 +102,7 @@ def compute(D_throat, D_exit, length_percent=80, theta_n=None, theta_e=None):
     Qy = (m1*C2 - m2*C1)/(m1-m2)
 
     x = -R_throat * 1.5 / 2
-    throat_dx = (x_parabola - x)/100
+    throat_dx = (x_parabola - x)/x_fine
 
     # throat downstream and upstream arcs
     while x < x_parabola:
@@ -106,7 +118,7 @@ def compute(D_throat, D_exit, length_percent=80, theta_n=None, theta_e=None):
 
     # parabola
     t = 0
-    dt = 0.05
+    dt = 1/t_fine
 
     while t <= 1:
         x, y = get_parabola_point(Nx, Ny, Qx, Qy, Ex, Ey, t)
@@ -114,23 +126,38 @@ def compute(D_throat, D_exit, length_percent=80, theta_n=None, theta_e=None):
         ys.append(y)
         t += dt
 
+    # if the program somehow skips the very last point, compute it
+    if t > 1 and t < 1 + dt:
+        t = 1
+        x, y = get_parabola_point(Nx, Ny, Qx, Qy, Ex, Ey, t)
+        xs.append(x)
+        ys.append(y)
+
     return xs, ys
 
-xs, ys = compute(120, 300, 80)
-fig, axs = plt.subplots(1,1)
-axs.plot(xs, ys)
-axs.axis('equal')
-plt.xlabel("Axial / X")
-plt.ylabel("Radial / Y")
-plt.show()
+def design_and_analyze(params):
+    D_throat = params["Throat Diameter"]
+    D_exit = params["Exit Diameter"]
+    length_percent = params["% Length to Equivalent Cone (optional)"]
+    theta_n = params["Parabola Start Angle (optional)"]
+    theta_e = params["Exit Angle (optional)"]
 
-rows = []
-for i in range(len(xs)):
-    rows.append([xs[i], ys[i]])
+    x_fine = params["Throat Plot Fineness (optional)"]
+    t_fine = params["Parabola Fineness (optional)"]
 
-outfile = open("latest.csv", "w")
-csvwriter = csv.writer(outfile)
-for r in rows:
-    csvwriter.writerow(r)
+    gamma = params["Combustion Gases Gamma (optional)"]
+    
+    xs, ys = compute_geometry(D_throat, D_exit, length_percent, theta_n, theta_e,
+                              x_fine, t_fine)
 
-outfile.close()
+    mach_data = None
+
+    if gamma:
+        try:
+            subsonic_x, subsonic_M, supersonic_x, supersonic_M = calc_mach_num(xs, ys, gamma)
+            mach_data = [subsonic_x, subsonic_M, supersonic_x, supersonic_M]
+        except:
+            print("WARNING: Can not calculate Mach profile, likely because the program does some subtractive cancellation. Try reducing fineness.")
+          
+    plot_all(xs, ys, mach_data)
+    return
