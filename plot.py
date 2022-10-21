@@ -47,7 +47,7 @@ def plot_all(xs, ys, mach_data=None):
         return
 
     try:
-        rows = []
+        rows = [["X", "Y"]]
         for i in range(len(xs)):
             rows.append([xs[i], ys[i]])
 
