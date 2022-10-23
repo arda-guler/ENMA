@@ -22,9 +22,9 @@ def plot_all(xs, ys, mach_data=None):
         
         ax2 = ax.twinx()
         ax2.set_aspect('auto')
-        ax2.yaxis.set_label_position("left")
-        ax2.yaxis.tick_left()
-        ax2.plot(Mxs, Mys)
+        ax2.yaxis.set_label_position("right")
+        ax2.yaxis.tick_right()
+        ax2.plot(Mxs, Mys, color="r")
         ax2.set_ylabel("Mach Number")
 
     plt.grid()

@@ -158,6 +158,6 @@ def design_and_analyze(params):
             mach_data = [subsonic_x, subsonic_M, supersonic_x, supersonic_M]
         except:
             print("WARNING: Can not calculate Mach profile, likely because the program does some subtractive cancellation. Try reducing fineness.")
-          
+
     plot_all(xs, ys, mach_data)
     return

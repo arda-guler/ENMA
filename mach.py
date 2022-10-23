@@ -15,7 +15,7 @@ def calc_mach_num(xs, ys, gamma):
     subsonic_M = []
     subsonic_x = []
 
-    throat_y = min(xs)
+    throat_y = min(ys)
 
     # subsonic region
     for i in range(len(xs)):
@@ -32,9 +32,7 @@ def calc_mach_num(xs, ys, gamma):
             last_i = i
             break
 
-        A_star = pi * throat_y**2
-        A = pi * y**2
-        A_ratio = A/A_star
+        A_ratio = (y**2)/(throat_y**2)
 
         # - - - - - - BEGIN QUOTE - - - - - -
         gp1 = gamma + 1
@@ -75,7 +73,7 @@ def calc_mach_num(xs, ys, gamma):
         # required failsafe
         if macho >= 1 or macho < 0.2:
             macho = 0
-            
+    
         subsonic_M.append(macho)
         subsonic_x.append(x)
 
@@ -90,9 +88,7 @@ def calc_mach_num(xs, ys, gamma):
         x = xs[i]
         y = ys[i]
         
-        A_star = pi * throat_y**2
-        A = pi * y**2
-        A_ratio = A/A_star
+        A_ratio = (y**2)/(throat_y**2)
 
         # - - - - - - BEGIN QUOTE - - - - - -
         gp1 = gamma + 1
